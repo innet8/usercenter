@@ -1,0 +1,12 @@
+.cache
+.idea
+*_test.go
+test.*
+main
+/tmp/
+/public/uploads/
+# .env
+output.log
+wsc.log
+work
+.env
