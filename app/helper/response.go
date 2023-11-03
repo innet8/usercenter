@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"authentik-go/i18n"
 	"net/http"
 	"net/url"
 	"strings"
@@ -53,10 +54,12 @@ func (r response) Response(c *gin.Context, code int, msg string, values ...any) 
 
 // Success 成功
 func (r response) Success(c *gin.Context, values ...any) {
-	r.Response(c, http.StatusOK, "success", values...)
+	msgDetail := i18n.GetMsgWithMap("成功", map[string]any{"detail": values})
+	r.Response(c, http.StatusOK, msgDetail, values...)
 }
 
 // Error 失败
-func (r response) Error(c *gin.Context, msg string) {
-	r.Response(c, http.StatusBadRequest, msg)
+func (r response) Error(c *gin.Context, msg string, values ...any) {
+	msgDetail := i18n.GetMsgWithMap(msg, map[string]any{"detail": values})
+	r.Response(c, http.StatusBadRequest, msgDetail)
 }

@@ -3,6 +3,7 @@
 密码不能为空: password can not be blank
 密码错误: wrong password
 当前环境禁止此操作: This operation is prohibited in the current environment
+成功: success
 新帐号: new account
 无效的邮箱地址: Invalid email address
 来源不能为空: Source cannot be empty

@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var ipRegistry = make(map[string]int)
+
 // @Tags System
 // @Summary 登录
 // @Description 登录
@@ -65,8 +67,7 @@ func (api *BaseApi) Login() {
 // @Summary 获取客户端列表
 // @Description 获取客户端列表
 // @Accept json
-// @Param source query string false "来源 all"
-// @Param online query string false "是否在线 all,1,0"
+// @Param request body interfaces.UserRegReq true "request"
 // @Success 200 {object} interfaces.Response{}
 // @Router /api/v1/register [post]
 func (api *NotAuthBaseApi) Register() {
@@ -75,6 +76,18 @@ func (api *NotAuthBaseApi) Register() {
 		helper.ApiResponse.Error(api.BaseApi.Context, constant.ErrInvalidParameter)
 		return
 	}
+	//
+	ip := api.BaseApi.Context.ClientIP()
+	// 检查 IP 映射
+	count, ok := ipRegistry[ip]
+	// 如果不存在，则创建新的映射
+	if !ok {
+		ipRegistry[ip] = 1
+	} else if count >= 3 && time.Now().Sub(time.Unix(int64(ipRegistry[ip]), 0)).Minutes() < 1 {
+		helper.ApiResponse.Error(api.BaseApi.Context, "请勿频繁操作")
+		return
+	}
+	//
 	if len(param.Password) == 0 {
 		helper.ApiResponse.Error(api.BaseApi.Context, "密码不能为空")
 		return
@@ -92,5 +105,8 @@ func (api *NotAuthBaseApi) Register() {
 		helper.ApiResponse.Error(api.BaseApi.Context, err.Error())
 		return
 	}
+	// 更新 IP 映射
+	ipRegistry[ip]++
+	//
 	helper.ApiResponse.Success(api.BaseApi.Context, result)
 }
