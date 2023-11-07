@@ -8,7 +8,7 @@ import (
 // @title hios
 // @version 1.0
 // @description  hios是一款轻量级的开源在线项目文件管理工具，提供各类文档协作工具。
-// @termsOfService https://file.weifashi.cn/
+// @termsOfService https://www.gnu.org/
 // @license.name AGPL-3.0 license
 // @license.url http://www.gnu.org/licenses/
 // @host http://localhost

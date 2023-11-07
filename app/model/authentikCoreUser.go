@@ -24,4 +24,5 @@ type AuthentikCoreUser struct {
 	Path               string    `gorm:"type:text;not null" json:"path"`
 	Type               string    `gorm:"type:text;not null" json:"type"`
 	Source             string    `gorm:"type:varchar(50);default:'';comment:来源" json:"source"`
+	RegIP              string    `gorm:"type:varchar(50);default:'';comment:注册ip" json:"reg_ip"`
 }

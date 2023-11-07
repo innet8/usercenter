@@ -19,6 +19,7 @@ export namespace User {
     // 登录请求
     export interface LoginReq {
         email: string
+        username: string
         password: string
         code_id?: string
         code?: string
@@ -29,6 +30,7 @@ export namespace User {
         email: string
         password: string
         password2?: string
+        source?: string
     }
 
     // 是否需要验证码

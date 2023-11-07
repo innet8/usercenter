@@ -25,6 +25,11 @@ type UserReq struct {
 	Source             string                 `gorm:"type:varchar(50);default:'';comment:来源" json:"source"`
 }
 
+type UserLoginReq struct {
+	Username string `json:"username"` //用户名
+	Password string `json:"password"` //密码
+}
+
 type UserRegReq struct {
 	Email    string `json:"email"`    //邮箱
 	Password string `json:"password"` //密码

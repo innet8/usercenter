@@ -33,12 +33,12 @@ const docTemplate = `{
                 "summary": "登录",
                 "parameters": [
                     {
-                        "description": "用户名",
-                        "name": "username",
+                        "description": "request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/interfaces.UserLoginReq"
                         }
                     }
                 ],
@@ -97,6 +97,19 @@ const docTemplate = `{
                 },
                 "msg": {
                     "description": "信息",
+                    "type": "string"
+                }
+            }
+        },
+        "interfaces.UserLoginReq": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
                     "type": "string"
                 }
             }

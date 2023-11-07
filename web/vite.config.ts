@@ -8,8 +8,8 @@ import * as path from 'path';
 
 export default defineConfig(({ command, mode }) => {
     const env = loadEnv(mode, process.cwd(), '')
-    const devPort: any = env['DEV_PORT'] || 3377
-    const devProxyTarget: string = env['DEV_PROXY_TARGET'] || 'http://127.0.0.1:3377'
+    const devPort: any = env['DEV_PORT'] || 8016
+    const devProxyTarget: string = env['DEV_PROXY_TARGET'] || 'http://127.0.0.1:8015'
     const appname: any = '/'
 
     return {

@@ -40,5 +40,12 @@
     "请填写正确邮箱": "Silakan isi alamat email yang benar",
     "请填写密码": "Silakan isi kata sandinya",
     "请再次确认密码": "Harap konfirmasi kata sandi lagi",
-    "两次填写的密码不符": "Kata sandi yang diisi dua kali tidak cocok"
+    "两次填写的密码不符": "Kata sandi yang diisi dua kali tidak cocok",
+    "成功": "kesuksesan",
+    "请输入您的电子邮箱": "Masukkan email Anda",
+    "请输入正确的邮箱": "silakan masukkan email valid Anda",
+    "两次密码输入不一致": "Kedua input kata sandi tidak konsisten",
+    "登录成功": "login berhasil",
+    "输入您的账号": "Masukkan nomor akun Anda",
+    "请输入您的账号": "Silakan masukkan nomor rekening Anda"
 }

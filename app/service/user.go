@@ -17,8 +17,38 @@ var UserService = userService{}
 
 type userService struct{}
 
+// 用户登录
+func (uSrv userService) UserLogin(username, password string) (*model.AuthentikCoreUser, error) {
+	var user model.AuthentikCoreUser
+	core.DB.Where("username = ? OR email = ?", username, username).First(&user)
+	if user.ID == 0 {
+		return nil, e.New("用户不存在")
+	}
+	if !django.CheckPassword(password, user.Password) {
+		return nil, e.New("密码错误")
+	}
+	if !user.IsActive {
+		return nil, e.New("该帐户已被禁用")
+	}
+	// 更新登录时间
+	core.DB.Model(&user).Where("id = ?", user.ID).Update("last_login", time.Now())
+	//
+	var result model.AuthentikCoreUser
+	err := common.StructToStruct(user, &result, "password")
+	if err != nil {
+		return nil, err
+	}
+	//
+	return &result, nil
+}
+
 // 用户注册
 func (uSrv userService) UserReg(clientIp string, param interfaces.UserRegReq) (*model.AuthentikCoreUser, error) {
+	var count int64
+	core.DB.Model(&model.AuthentikCoreUser{}).Where("date_joined > ?", time.Now().Add(-1*time.Minute)).Count(&count)
+	if count >= 3 {
+		return nil, e.New("用户注册失败，操作频率过高")
+	}
 	// 邮箱
 	if !common.IsEmail(param.Email) {
 		return nil, e.New("无效的邮箱地址")
@@ -45,6 +75,7 @@ func (uSrv userService) UserReg(clientIp string, param interfaces.UserRegReq) (*
 		"PasswordChangeDate": time.Now(),
 		"Attributes":         "{}",
 		"Type":               "internal",
+		"RegIP":              clientIp,
 	}).Error
 	if err != nil {
 		return nil, err

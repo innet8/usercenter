@@ -4,12 +4,7 @@ import (
 	"authentik-go/app/constant"
 	"authentik-go/app/helper"
 	"authentik-go/app/interfaces"
-	"authentik-go/app/model"
 	"authentik-go/app/service"
-	"authentik-go/core"
-	"authentik-go/utils/common"
-	"authentik-go/utils/django"
-	"time"
 )
 
 var ipRegistry = make(map[string]int)
@@ -18,12 +13,11 @@ var ipRegistry = make(map[string]int)
 // @Summary 登录
 // @Description 登录
 // @Accept json
-// @Param username body string true "用户名"
-// @Param password body string true "密码"
+// @Param request body interfaces.UserLoginReq true "request"
 // @Success 200 {object} interfaces.Response{}
 // @Router /api/v1/login [post]
 func (api *BaseApi) Login() {
-	var param = model.AuthentikCoreUser{}
+	var param = interfaces.UserLoginReq{}
 	if err := api.Context.ShouldBind(&param); err != nil {
 		helper.ApiResponse.Error(api.Context, constant.ErrInvalidParameter)
 		return
@@ -36,25 +30,8 @@ func (api *BaseApi) Login() {
 		helper.ApiResponse.Error(api.Context, "密码不能为空")
 		return
 	}
-	var user model.AuthentikCoreUser
-	core.DB.Where("username = ? OR email = ?", param.Username, param.Username).First(&user)
-	if user.ID == 0 {
-		helper.ApiResponse.Error(api.Context, "用户不存在")
-		return
-	}
-	if !django.CheckPassword(param.Password, user.Password) {
-		helper.ApiResponse.Error(api.Context, "密码错误")
-		return
-	}
-	if !user.IsActive {
-		helper.ApiResponse.Error(api.Context, "该帐户已被禁用")
-		return
-	}
-	// 更新登录时间
-	core.DB.Model(&user).Where("id = ?", user.ID).Update("last_login", time.Now())
 	//
-	var result model.AuthentikCoreUser
-	err := common.StructToStruct(user, &result, "password")
+	result, err := service.UserService.UserLogin(param.Username, param.Password)
 	if err != nil {
 		helper.ApiResponse.Error(api.Context, err.Error())
 		return
@@ -64,8 +41,8 @@ func (api *BaseApi) Login() {
 }
 
 // @Tags System
-// @Summary 获取客户端列表
-// @Description 获取客户端列表
+// @Summary 注册
+// @Description 注册
 // @Accept json
 // @Param request body interfaces.UserRegReq true "request"
 // @Success 200 {object} interfaces.Response{}
@@ -74,17 +51,6 @@ func (api *NotAuthBaseApi) Register() {
 	var param = interfaces.UserRegReq{}
 	if err := api.BaseApi.Context.ShouldBindJSON(&param); err != nil {
 		helper.ApiResponse.Error(api.BaseApi.Context, constant.ErrInvalidParameter)
-		return
-	}
-	//
-	ip := api.BaseApi.Context.ClientIP()
-	// 检查 IP 映射
-	count, ok := ipRegistry[ip]
-	// 如果不存在，则创建新的映射
-	if !ok {
-		ipRegistry[ip] = 1
-	} else if count >= 3 && time.Now().Sub(time.Unix(int64(ipRegistry[ip]), 0)).Minutes() < 1 {
-		helper.ApiResponse.Error(api.BaseApi.Context, "请勿频繁操作")
 		return
 	}
 	//
@@ -105,8 +71,6 @@ func (api *NotAuthBaseApi) Register() {
 		helper.ApiResponse.Error(api.BaseApi.Context, err.Error())
 		return
 	}
-	// 更新 IP 映射
-	ipRegistry[ip]++
 	//
 	helper.ApiResponse.Success(api.BaseApi.Context, result)
 }

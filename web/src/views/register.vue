@@ -9,18 +9,17 @@
                     {{ $t("输入您的凭证以访问您的帐户") }}
                 </p>
                 <transition name="login-mode">
-                    <n-form :rules="rules" label-placement="left">
+                    <n-form ref="formRef" :rules="rules" label-placement="left" :model="formData">
                         <div v-if="loginMode == 'access'" class="login-access">
                             <n-form-item label="" path="email">
-                                <n-input v-model:value="formData.email" @blur="onBlur" :placeholder="$t('输入您的电子邮箱')" clearable
-                                    size="large">
+                                <n-input v-model:value="formData.email" @blur="onBlur" :placeholder="$t('输入您的账号')" clearable size="large">
                                     <template #prefix>
                                         <n-icon :component="MailOutline" />
                                     </template>
                                 </n-input>
                             </n-form-item>
                             <n-form-item label="" path="password">
-                                <n-input v-model:value="formData.password" @blur="onBlur" :placeholder="$t('输入您的密码')" clearable
+                                <n-input type="password" v-model:value="formData.password" @blur="onBlur" :placeholder="$t('输入您的密码')" clearable
                                     size="large">
                                     <template #prefix>
                                         <n-icon :component="LockClosedOutline" />
@@ -75,14 +74,14 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import { userLogin, userReg } from "@/api/modules/user"
-import { useMessage } from "naive-ui"
+import { useMessage,FormItemRule } from "naive-ui"
 import utils from "@/utils/utils"
 import { UserStore } from "@/store/user"
 import { useRouter } from "vue-router"
 import { MailOutline, LockClosedOutline, CheckmarkCircleOutline } from "@vicons/ionicons5"
 
-const router = useRouter()
 const message = useMessage()
+const router = useRouter()
 const loadIng = ref<boolean>(false)
 const code = ref("")
 const codeUrl = ref("")
@@ -92,6 +91,7 @@ const loginMode = ref("access") //qrcode
 const codeNeed = ref(false)
 const codeId = ref("")
 const loginType = ref<String>("reg")
+const formRef = ref(null)
 const formData = ref({
     email: "",
     password: "",
@@ -100,52 +100,85 @@ const formData = ref({
 })
 
 const rules = ref({
-    email: { required: true, message: $t('输入您的电子邮箱'), trigger: 'blur' },
-    password: { required: true, message: $t('输入您的密码'), trigger: 'blur' },
-    confirmPassword: { required: true, message: $t('输入您的密码'), trigger: 'blur' },
+    email: {
+        required: true,
+        validator (rule: FormItemRule, value: string) {
+            if (!value) {
+              return new Error($t('请输入您的账号'))
+            }else if (!utils.isEmail(value)) {
+            //   return new Error($t('请输入正确的邮箱'))
+            }
+            return true
+        },
+        trigger:  ['input','blur']
+    },
+    password: { required: true, message: $t('输入您的密码'), trigger: ['input','blur'] },
+    confirmPassword: {
+        required: true,
+        validator (rule: FormItemRule, value: string) {
+            if (!value) {
+              return new Error($t('请再次确认密码'))
+            }else if (value != formData.value.password) {
+              return new Error($t('两次密码输入不一致'))
+            }
+            return true
+        },
+        trigger: ['input','blur'],
+    },
 })
 
 // 登录
 const handleLogin = () => {
-    if (formData.value.email == "") return message.info($t("请填写邮箱"))
-    if (!utils.isEmail(formData.value.email)) return message.info($t("请填写正确邮箱"))
-    if (formData.value.password == "") return message.info($t("请填写密码"))
-    loadIng.value = true
-    userLogin({
-        email: formData.value.email,
-        password: formData.value.password,
-        code_id: codeId.value,
-        code: code.value,
-    }).then(({ data, msg }) => {
-        userState.info = data
-        router.replace("/")
-    })
-    .catch( res => {
-        if (res.data.code == "need") {
-            onBlur()
+    formRef.value?.validate((errors) => {
+        if (errors) {
+            console.log(errors)
+            return
         }
+        loadIng.value = true
+        userLogin({
+            email: formData.value.email,
+            username: formData.value.email,
+            password: formData.value.password,
+            code_id: codeId.value,
+            code: code.value,
+        }).then(({ data, msg }) => {
+            userState.info = data
+            // router.replace("/success")
+            parent.window.location.href = "/success"
+        })
+        .catch( res => {
+            message.error(res.msg)
+            if (res.data.code == "need") {
+                onBlur()
+            }
+        })
+        .finally(() => {
+            loadIng.value = false
+        })
     })
-    .finally(() => {
-        loadIng.value = false
-    })
+
 }
 
 // 注册
 const handleReg = () => {
-    if (formData.value.email == "") return message.info($t("请填写邮箱"))
-    if (!utils.isEmail(formData.value.email)) return message.info($t("请填写正确邮箱"))
-    if (formData.value.password == "") return message.info($t("请填写密码"))
-    if (formData.value.confirmPassword == "") return message.info($t("请再次确认密码"))
-    if (formData.value.confirmPassword != formData.value.password) return message.info($t("两次填写的密码不符"))
-    loadIng.value = true
-    userReg({
-        email: formData.value.email,
-        password: formData.value.password,
-    }).then(({ data,msg }) => {
-        userState.info = data
-        router.replace("/")
-    }).finally(() => {
-        loadIng.value = false
+    formRef.value?.validate((errors) => {
+        if (errors) {
+            console.log(errors)
+            return
+        }
+        loadIng.value = true
+        userReg({
+            email: formData.value.email,
+            password: formData.value.password,
+            source: 'sys-web',
+        }).then(({ data,msg }) => {
+            loginType.value = "login"
+        })
+        .catch( res => {
+            message.error(res.msg)
+        }).finally(() => {
+            loadIng.value = false
+        })
     })
 }
 
@@ -186,7 +219,7 @@ const refreshCode = () => {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .page-login {
     @apply bg-bg-login flex items-center;
 
@@ -198,7 +231,8 @@ const refreshCode = () => {
         }
 
         .login-box {
-            @apply bg-bg-login-box rounded-2xl w-400 max-w-90p shadow-login-box-Shadow relative;
+            @apply bg-bg-login-box rounded w-400 shadow-login-box-Shadow relative;
+            max-width: 100%;
 
             .login-mode-switch {
                 @apply absolute top-1 right-1 z-10 rounded-lg overflow-hidden;

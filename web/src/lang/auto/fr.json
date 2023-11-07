@@ -40,5 +40,12 @@
     "请填写正确邮箱": "Veuillez remplir la bonne adresse e-mail",
     "请填写密码": "Veuillez remplir le mot de passe",
     "请再次确认密码": "Veuillez confirmer à nouveau le mot de passe",
-    "两次填写的密码不符": "Les mots de passe renseignés deux fois ne correspondent pas"
+    "两次填写的密码不符": "Les mots de passe renseignés deux fois ne correspondent pas",
+    "成功": "succès",
+    "请输入您的电子邮箱": "Veuillez entrer votre email",
+    "请输入正确的邮箱": "veuillez entrer votre email valide",
+    "两次密码输入不一致": "Les deux entrées de mot de passe sont incohérentes",
+    "登录成功": "connexion réussie",
+    "输入您的账号": "Entrez votre numéro de compte",
+    "请输入您的账号": "Veuillez entrer votre numéro de compte"
 }
